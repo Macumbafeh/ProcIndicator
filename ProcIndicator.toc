@@ -1,0 +1,6 @@
+## Interface: 20400
+## Title: ProcIndicator
+## Author: Oldsalt
+## Notes: Simple add-on to highlight up to 5 buffs
+## SavedVariablesPerCharacter: savedProcIndicatorSettings
+ProcIndicator.lua
