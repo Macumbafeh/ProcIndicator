@@ -14,25 +14,32 @@ for i=1,5 do
 	frame:RegisterForDrag("LeftButton")
 	frame:SetScript("OnDragStart", function() ProcIndicatorFrame1:StartMoving() end)
 	frame:SetScript("OnDragStop", function() ProcIndicatorFrame1:StopMovingOrSizing() end)
-	
+
 	local background = frame:CreateTexture("ProcIndicatorBackground"..i, "BACKGROUND")
 	background:SetAllPoints()
 	background:SetTexture(0, 0, 0, 0.3)
 	background:SetWidth(36)
 	background:SetHeight(36)
-	
+
 	local texture = frame:CreateTexture("ProcIndicatorTexture"..i)
 	texture:SetAllPoints()
 	texture:SetWidth(36)
 	texture:SetHeight(36)
 	texture:SetTexCoord(0.06, 0.94, 0.06, 0.94)
-	
+
 	local font = frame:CreateFontString("ProcIndicatorFont"..i, "ARTWORK", "GameFontNormal")
 	font:SetPoint("TOPRIGHT", 4, -38)
 	font:SetPoint("BOTTOMLEFT", -5, -18)
 	font:SetJustifyH("CENTER")
 	font:SetFont("Fonts\\FRIZQT__.TTF", 16)
 	font:SetTextColor(1, 0, 0)
+
+	local stackFont = frame:CreateFontString("ProcIndicatorStackFont"..i, "ARTWORK", "GameFontNormal")
+	stackFont:SetPoint("TOPRIGHT", 4, 18)
+	stackFont:SetPoint("BOTTOMLEFT", -5, 38)
+	stackFont:SetJustifyH("CENTER")
+	stackFont:SetFont("Fonts\\FRIZQT__.TTF", 16)
+	stackFont:SetTextColor(0.94, 0.9, 0.55)
 end
 
 SLASH_PROCINDICATOR1 = "/proc"
@@ -121,7 +128,7 @@ SlashCmdList["PROCINDICATOR"] = function(msg)
 		savedProcIndicatorSettings[2] = procScale -- addon's scale
 		for i=1,5 do
 			_G["ProcIndicatorFrame"..i]:SetScale(tonumber(procScale))
-		end	
+		end
 	elseif msg == "lock" then
 		savedProcIndicatorSettings[3] = 1 -- locked
 		for i=1,5 do
@@ -190,13 +197,24 @@ ProcIndicatorUpdateFrame:SetScript("OnUpdate", function(self, elapsed)
 	end
 	for i=1,40 do -- loop to go through your buffs
 		if select(1, UnitBuff("player", i)) ~= nil then
-			local spellName, _, spellIcon, _, _, spellDur = UnitBuff("player", i)
+			local spellName, _, spellIcon, spellCount, _, spellDur = UnitBuff("player", i)
 			for k=1,5 do
-				if spellName == savedProcIndicatorSettings[10+k] and _G["ProcIndicatorFrame"..k]:IsShown() and spellDur ~= nil then
+				if spellName == savedProcIndicatorSettings[10+k] and _G["ProcIndicatorFrame"..k]:IsShown() then
 					_G["ProcIndicatorTexture"..k]:SetTexture(spellIcon)
 					_G["ProcIndicatorTexture"..k]:Show()
-					if spellDur < 60 then
-						_G["ProcIndicatorFont"..k]:SetText(spellDur - spellDur % 0.1)
+					if spellDur ~= nil then
+						if spellDur == 0 then
+							_G["ProcIndicatorFont"..k]:SetText("")
+						elseif spellDur <= 60 then
+							_G["ProcIndicatorFont"..k]:SetText(spellDur - spellDur % 0.1)
+						else
+							_G["ProcIndicatorFont"..k]:SetText(ceil(spellDur/60).."m.")
+						end
+					end
+					if spellCount > 1 then
+						_G["ProcIndicatorStackFont"..k]:SetText(spellCount)
+					else
+						_G["ProcIndicatorStackFont"..k]:SetText("")
 					end
 					procCheck[k] = 1
 				end
@@ -205,6 +223,7 @@ ProcIndicatorUpdateFrame:SetScript("OnUpdate", function(self, elapsed)
 			for k=1,5 do
 				if procCheck[k] == 0 and _G["ProcIndicatorTexture"..k]:IsShown() then
 					_G["ProcIndicatorTexture"..k]:Hide()
+					_G["ProcIndicatorStackFont"..k]:SetText("")
 					_G["ProcIndicatorFont"..k]:SetText("")
 				end
 			end
